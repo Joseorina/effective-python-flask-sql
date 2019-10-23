@@ -7,7 +7,19 @@ class User:
         
     @classmethod
     def find_by_username(cls, username):
-        pass
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+        
+        query ="SELECT * FROM users WHERE username=?"
+        result = cursor.execute(query, (username,))
+        row = result.fetchone()
+        if row:
+            user = cls(*row)
+        else:
+            user = None
+            
+        connection.close()
+        return user                        
     
     @classmethod
     def find_by_id(cls, _id):
