@@ -75,15 +75,42 @@ class Item(Resource):
 
         item = self.find_by_name(name)
         updated_item = {'name': name, 'price':data['price']}
+
         if item is None:
-            self.insert(updated_item)
+            try:
+                self.insert(updated_item)
+            except:
+                return {'message': 'An error occured inserting the item'}, 500
         else:
-            self.update(updated_item)
-        return item
+            try:
+                self.update(updated_item)
+            except:
+                return {'message': 'An error occured updating the item'}, 500
+
+        return updated_item
 
     @classmethod
-    
+    def update(self, item):
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        query = "UPDATE items SET price=? WHERE name=?"
+        cursor.execute(query, (item['price'],item['name']))
+
+        connection.commit()
+        connection.close()
 
 class Items(Resource):
     def get(self):
-        return {'items': items}, 200
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        query = "SELECT * FROM items"
+        result = cursor.execute(query)
+        items = []
+        for row in result:
+            items.append({'name':row[0], 'price':row[1]})
+
+        connection.close()
+
+        return {'items': items}
